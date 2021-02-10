@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">TowerOfHanoi</string>
+    <string name="intro_text">Hvor raskt klarer du å flytte ringen fra tårn 1 til tårn 3?</string>
+    <string name="antall_flytt">Antall flytt:</string>
+    <string name="sekunder">Sekunder:</string>
+    <string name="start_button">Start</string>
+    <string name="bottom_margin">237dp</string>
+</resources>
