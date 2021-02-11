@@ -1,6 +1,7 @@
 package com.example.towerofhanoi;
 
 import androidx.annotation.ContentView;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -12,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.DragEvent;
@@ -22,12 +24,17 @@ import android.view.View.OnDragListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EventListener;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,6 +42,22 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<Integer> layoutTwoList;
     ArrayList<Integer> layoutThreeList;
     int counter;
+    TextView countText;
+    TextView winnerText;
+    Timer timer;
+    double time;
+    List<Double> sumTimer = new ArrayList<Double>();
+    TextView textUpdateTime;
+    Button startButton;
+    boolean startButtonPressed = false;
+    //layouts
+    LinearLayout layout1;
+    LinearLayout layout2;
+    LinearLayout layout3;
+    //rings
+    View bigRed;
+    View mediumBlue;
+    View smallGreen;
 
 
     @Override
@@ -42,26 +65,109 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        time = 0.0;
+        counter = 0;
+
+        //set layout
+        layout1 = findViewById(R.id.layout_01);
+        layout2 = findViewById(R.id.layout_02);
+        layout3 = findViewById(R.id.layout_03);
+
         //Drag layouts
-        findViewById(R.id.layout_01).setOnDragListener(new MyDragListener());
-        findViewById(R.id.layout_02).setOnDragListener(new MyDragListener());
-        findViewById(R.id.layout_03).setOnDragListener(new MyDragListener());
+        layout1.setOnDragListener(new MyDragListener());
+        layout2.setOnDragListener(new MyDragListener());
+        layout3.setOnDragListener(new MyDragListener());
 
-        //Drag rings/rectangles
-        findViewById(R.id.big_red).setOnTouchListener(new MyTouchListener());
-        findViewById(R.id.medium_blue).setOnTouchListener(new MyTouchListener());
-        findViewById(R.id.small_green).setOnTouchListener(new MyTouchListener());
+        //set rings/rectangles
+        bigRed = findViewById(R.id.big_red);
+        mediumBlue = findViewById(R.id.medium_blue);
+        smallGreen = findViewById(R.id.small_green);
 
+        //
+        /*bigRed.setOnTouchListener(new MyTouchListener());
+        mediumBlue.setOnTouchListener(new MyTouchListener());
+        smallGreen.setOnTouchListener(new MyTouchListener());*/
+
+        //Count
+        countText = (TextView) findViewById(R.id.count);
+        //winner text
+        winnerText = (TextView) findViewById(R.id.winnerText);
+        //Timer
+        textUpdateTime = (TextView)findViewById(R.id.time);
+        timer = new Timer();
+        //Button
+        startButton = (Button) findViewById(R.id.startButton);
+
+
+        if(savedInstanceState != null){
+            //Count
+            Integer countString = (Integer) savedInstanceState.getInt("count");
+            counter = (int) countString;
+            countText.setText(countString.toString());
+
+            //time
+            double restoreTime = (Double) savedInstanceState.getDouble("time");
+            time = restoreTime;
+            //set count text
+            Integer stringCount = counter;
+            countText.setText(stringCount.toString());
+            //format time and put it into text
+
+            textUpdateTime.setText(getTimerText(time));
+            startButton.performClick();
+        }
 
 
     }
 
+    public void startButton(View view){
+        if(startButtonPressed){
+            reset();
+        }else {
+            counter = 0;
+            Integer countString = counter;
+            countText.setText(countString.toString());
+            startButtonPressed = true;
+            startButton.setText(R.string.reset);
+            //start the timer
+            startTimer();
+            //Adde the touchListeners
+            bigRed.setOnTouchListener(new MyTouchListener());
+            mediumBlue.setOnTouchListener(new MyTouchListener());
+            smallGreen.setOnTouchListener(new MyTouchListener());
+        }
+    }
+
+    //Her kunne jeg brukt onRestart() for å gjort det enklere
+    public void reset(){
+        startButtonPressed = false;
+        startButton.setText(R.string.start);
+        //Reset timer
+        timer.cancel();
+        time = 0.0;
+        timer = new Timer();
+        textUpdateTime.setText("00:00:00");
+        winnerText.setText("");
+        //Reset layout
+        layout1.removeAllViews();
+        layout2.removeAllViews();
+        layout3.removeAllViews();
+        //Add them back to layout1
+        layout1.addView(smallGreen);
+        layout1.addView(mediumBlue);
+        layout1.addView(bigRed);
+        //remove MyTouchListener()
+        smallGreen.setOnTouchListener(null);
+        mediumBlue.setOnTouchListener(null);
+        bigRed.setOnTouchListener(null);
+    }
+
+
     private final class MyTouchListener implements OnTouchListener {
         public boolean onTouch(View view, MotionEvent motionEvent) {
-            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+           if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
                 ClipData data = ClipData.newPlainText("", "");
-                DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(
-                        view);
+                DragShadowBuilder shadowBuilder = new View.DragShadowBuilder(view);
                 view.startDrag(data, shadowBuilder, view, 0);
                 view.setVisibility(View.INVISIBLE);
                 return true;
@@ -82,11 +188,9 @@ public class MainActivity extends AppCompatActivity {
             switch (event.getAction()) {
                 case DragEvent.ACTION_DRAG_STARTED:
                     // do nothing
-
                     break;
                 case DragEvent.ACTION_DRAG_ENTERED:
                     notSmallestView(v, event);
-                    //v.setBackgroundDrawable(enterShape);
                     break;
                 case DragEvent.ACTION_DRAG_EXITED:
                     v.setBackgroundDrawable(normalShape);
@@ -94,9 +198,6 @@ public class MainActivity extends AppCompatActivity {
                 case DragEvent.ACTION_DROP:
                     // Dropped, reassign View to ViewGroup
                     bigSmallRule(v, event);
-                    //ifNotRed(v, event);
-
-
                     break;
                 case DragEvent.ACTION_DRAG_ENDED:
                     v.setBackgroundDrawable(normalShape);
@@ -126,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
                 View myView = view;
                 owner.removeView(view);
                 container.addView(myView, 0);
+                count();//adds 1 to counter
                 Log.d("MY_TAG", "Second chance");
             }
         }
@@ -140,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
                 View myView = view;
                 owner.removeView(view);
                 container.addView(myView, 0);
+                count();//+1
                 Log.d("MY_TAG", "indreindre");
             }
         }
@@ -152,21 +255,35 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout container = (LinearLayout) v;
         int indexView = owner.indexOfChild(view);
         if(owner.getChildAt(0) != view){
-            container.removeView(view);
-            Log.d("MY_TAG", "whenNotIndexZero");
+            if(owner == container){
+                container.removeView(view);
+                //owner.removeView(view);
+                owner.addView(view, indexView);
+            }else{
+                container.removeView(view);
+                //owner.removeView(view);
+            }
         }
-
     }
-
 
     //If the player managed to build the tower on the 3 layout, call this methode
     public void winner(View v, DragEvent event){
         LinearLayout layoutThree = findViewById(R.id.layout_03);
         View view = (View) event.getLocalState();
         LinearLayout container = (LinearLayout) v;
-        //SmallGreen = 2131231024(størst), MediumBlue = 2131230924(medium), BigRed = 2131230805(smallest)
-        if(layoutThree.getChildCount() == 3 && container.getChildCount() == 3 && (Integer) container.getChildAt(0).getId() == 2131231024 && (Integer) container.getChildAt(1).getId() == 2131230924 && (Integer) container.getChildAt(2).getId() == 2131230805){
+        //SmallGreen = 2131231025(størst), MediumBlue = 2131230925(medium), BigRed = 2131230805(smallest)
+        if(layoutThree.getChildCount() == 3 && container.getChildCount() == 3 &&
+                (Integer) container.getChildAt(0).getId() == 2131231025 &&
+                (Integer) container.getChildAt(1).getId() == 2131230925 &&
+                (Integer) container.getChildAt(2).getId() == 2131230805){
+            winnerText.setText(R.string.vinner);
+            timer.cancel();
+            timer = new Timer();
+            smallGreen.setOnTouchListener(null);
+            mediumBlue.setOnTouchListener(null);
+            bigRed.setOnTouchListener(null);
             Log.d("MY_TAG", "We have a winner!");
+
         }
 
     }
@@ -183,6 +300,53 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    //Count
+    public void count(){
+        counter++;
+        Integer countString = counter;
+        countText.setText(countString.toString());
+    }
+
+    //timer
+    public void startTimer() {
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                time++;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        textUpdateTime.setText(getTimerText(time));
+                        //Log.d("MY_TAG", "StartTimerX ran");
+                    }
+                });
+            }
+        }, 0, 1000);
+    }
+    private String getTimerText(double timeHere){
+        int rounded = (int) Math.round(timeHere);
+        int seconds = ((rounded % 86400) % 3600) % 60;
+        int minutes = ((rounded % 86400) % 3600) / 60;
+        int hours = ((rounded % 86400) / 3600);
+        return formatTime(seconds, minutes, hours);
+    }
+
+    private String formatTime(int sec, int min, int hour){
+        return String.format("%02d", hour) + ":" + String.format("%02d", min) + ":" + String.format("%02d", sec);
+    }
+
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        //save placement of rings (just save layout), save time, save count
+        outState.putInt("count", counter);
+        outState.putDouble("time", time);
+
+
+
+    }
 
     //Not used.
     public void statusLayouts(){

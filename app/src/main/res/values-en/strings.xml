@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TowerOfHanoi</string>
+    <string name="vinner">🍗Winner winner chicken dinner! 🍗</string>
+    <string name="stop">Stop</string>
+    <string name="start">Start</string>
+    <string name="reset">Reset</string>
+    <string name="time">Time:</string>
+    <string name="moves">Moves:</string>
+    <string name="start_button">Start</string>
+    <string name="sekunder">Seconds</string>
+</resources>
