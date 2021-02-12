@@ -1,20 +1,9 @@
 package com.example.towerofhanoi;
-
-import androidx.annotation.ContentView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ClipData;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.MotionEvent;
@@ -23,24 +12,23 @@ import android.view.View.DragShadowBuilder;
 import android.view.View.OnDragListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EventListener;
+
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
+    //save id for views in layouts
     ArrayList<Integer> layoutOneList;
     ArrayList<Integer> layoutTwoList;
     ArrayList<Integer> layoutThreeList;
+
     int counter;
     TextView countText;
     TextView winnerText;
@@ -68,12 +56,12 @@ public class MainActivity extends AppCompatActivity {
         time = 0.0;
         counter = 0;
 
-        //set layout
+        //layout
         layout1 = findViewById(R.id.layout_01);
         layout2 = findViewById(R.id.layout_02);
         layout3 = findViewById(R.id.layout_03);
 
-        //Drag layouts
+        //set Drag layouts
         layout1.setOnDragListener(new MyDragListener());
         layout2.setOnDragListener(new MyDragListener());
         layout3.setOnDragListener(new MyDragListener());
@@ -82,11 +70,6 @@ public class MainActivity extends AppCompatActivity {
         bigRed = findViewById(R.id.big_red);
         mediumBlue = findViewById(R.id.medium_blue);
         smallGreen = findViewById(R.id.small_green);
-
-        //
-        /*bigRed.setOnTouchListener(new MyTouchListener());
-        mediumBlue.setOnTouchListener(new MyTouchListener());
-        smallGreen.setOnTouchListener(new MyTouchListener());*/
 
         //Count
         countText = (TextView) findViewById(R.id.count);
@@ -134,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
+    //When the start button is pressed (onClick for start button)
     public void startButton(View view){
         if(startButtonPressed){
             reset();
@@ -155,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Her kunne jeg brukt onRestart() for å gjort det enklere
+    //A reset method for when the reset button is pressed, the same button as start.
     public void reset(){
         startButtonPressed = false;
         startButton.setText(R.string.start);
@@ -178,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         bigRed.setOnTouchListener(null);
     }
 
-
+    //See: https://www.vogella.com/tutorials/AndroidDragAndDrop/article.html
     private final class MyTouchListener implements OnTouchListener {
         public boolean onTouch(View view, MotionEvent motionEvent) {
            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
@@ -192,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
+    //see: https://www.vogella.com/tutorials/AndroidDragAndDrop/article.html
     class MyDragListener implements OnDragListener {
         Drawable enterShape = getResources().getDrawable(
                 R.drawable.t_big_red_border);
@@ -224,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    //Takes care of alle the rules in the game.
     public void bigSmallRule(View v, DragEvent event){
         View view = (View) event.getLocalState();
         ViewGroup owner = (ViewGroup) view.getParent();
@@ -265,6 +249,7 @@ public class MainActivity extends AppCompatActivity {
         winner(v, event);
     }
 
+    //Check that you take the ring on top
     public void whenNotIndexZero(View v, DragEvent event){
         View view = (View) event.getLocalState();
         ViewGroup owner = (ViewGroup) view.getParent();
@@ -273,11 +258,9 @@ public class MainActivity extends AppCompatActivity {
         if(owner.getChildAt(0) != view){
             if(owner == container){
                 container.removeView(view);
-                //owner.removeView(view);
                 owner.addView(view, indexView);
             }else{
                 container.removeView(view);
-                //owner.removeView(view);
             }
         }
     }
@@ -298,11 +281,6 @@ public class MainActivity extends AppCompatActivity {
             smallGreen.setOnTouchListener(null);
             mediumBlue.setOnTouchListener(null);
             bigRed.setOnTouchListener(null);
-            Log.d("MY_TAG", "We have a winner!");
-            /*View myView = findViewById(bigRed.getId());
-            layout3.removeView(myView);
-            layout2.addView(myView);*/
-
         }
 
     }
@@ -336,12 +314,12 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         textUpdateTime.setText(getTimerText(time));
-                        //Log.d("MY_TAG", "StartTimerX ran");
                     }
                 });
             }
         }, 0, 1000);
     }
+
     private String getTimerText(double timeHere){
         int rounded = (int) Math.round(timeHere);
         int seconds = ((rounded % 86400) % 3600) % 60;
@@ -369,7 +347,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //Not used.
     public void statusLayouts(){
         //Lists containing elements in the 3 different linearLayouts
         layoutOneList = new ArrayList<Integer>();
@@ -389,162 +366,6 @@ public class MainActivity extends AppCompatActivity {
         for(int i = 0; i < layoutThree.getChildCount(); i++){
             layoutThreeList.add(layoutThree.getChildAt(i).getId());
         }
-
-        //check list items in layoutOne
-        //Log.d("MY_TAG", layoutOneList.toString());
-
-    }
-
-
-    //Not used
-    public void gameLogic(DragEvent event){
-        statusLayouts();
-        LinearLayout layoutOne = findViewById(R.id.layout_01);
-        LinearLayout layoutTwo = findViewById(R.id.layout_02);
-        LinearLayout layoutThree = findViewById(R.id.layout_03);
-        View bigRed = (View) findViewById(R.id.big_red);
-        View mediumBlue = findViewById(R.id.medium_blue);
-        View smallGreen = findViewById(R.id.small_green);
-
-        //get layout a element is dropped into
-
-
-        View view = (View) event.getLocalState();
-
-        if(layoutThreeList.size() == 3){
-            Log.d("MY_TAG", "You won");
-        }
-
-        /*if(layoutOneList.size() != 0){
-            Collections.sort(layoutOneList);
-            if(((View) event.getLocalState()).getId() != layoutOneList.get(0)){
-                ((View) event.getLocalState()).dispatchDragEvent(event);
-            }
-        }*/
-    }
-    //Not used
-    public static void setMargins (View v, int l, int t, int r, int b) {
-        if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
-            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
-            p.setMargins(l, t, r, b);
-            v.requestLayout();
-        }
-    }
-
-    //not used
-    //Checks if the drawable is not red
-    public boolean isNotRed(View v, DragEvent event){
-        View view = (View) event.getLocalState();
-        ViewGroup owner = (ViewGroup) view.getParent();
-        LinearLayout container = (LinearLayout) v;
-
-        if(v.getBackground().getConstantState().equals(getResources().getDrawable(R.drawable.t_big).getConstantState())){
-            return true;
-        }else{
-            return false;
-        }
-    }
-    public void actionDropped(View v, DragEvent event){
-        //The different layouts
-        LinearLayout layoutOne = findViewById(R.id.layout_01);
-        LinearLayout layoutTwo = findViewById(R.id.layout_02);
-        LinearLayout layoutThree = findViewById(R.id.layout_03);
-
-        /*View view = (View) event.getLocalState();
-        ViewGroup owner = (ViewGroup) view.getParent();
-        owner.removeView(view);
-        LinearLayout container = (LinearLayout) v;
-        container.addView(view);
-        view.setVisibility(View.VISIBLE);*/
-
-        bigSmallRule(v, event);
-        winner(v, event);
-
-        //ID of of the drawable we drop
-        //SmallGreen = 2131231024(størst), MediumBlue = 2131230924(medium), BigRed = 2131230805(smallest)
-        Integer viewId = ((View) event.getLocalState()).getId();
-        String testStringOne = viewId.toString();
-        //Show parent
-        String test = ((View) event.getLocalState()).getParent().toString();
-        String stringThing = test.substring(test.lastIndexOf("app:id/layout_0"));
-        String output = testStringOne + ": " + stringThing;
-
-        //count children in a layout
-        Integer myNum = layoutOne.getChildCount();
-        String myNumString = myNum.toString();
-
-        //get the layout that the event is dropped into
-        //1 = 109961563 , 2 = 255083217  , 3 = 180303927
-        Integer parentLayoutView =  ((View) event.getLocalState()).getParent().hashCode();
-
-        //How many children does the owner have.
-        Integer ownerInt = findViewById(R.id.small_green).getTop();
-        Log.d("MY_TAG", ownerInt.toString());
-
-
-        //get all views in one layout.
-        //Integer intOne = layoutOne.getChildAt(0).getId();
-        //String intOneString = intOne.toString();
-        //Log.d("MY_TAG", intOneString); //skriver ut den øverste ringen i layout 1
-
-        //finn ut om layout listen er tom/ingen bran
-        /*if(parentLayoutView == 255083217){
-            if(viewId == 2131231024){
-                setMargins(findViewById(R.id.small_green), 0, 630, 0, 0);
-                Log.d("MY_TAG", "Running");
-            }
-        }*/
-        //SmallGreen = 2131231024(størst), MediumBlue = 2131230924(medium), BigRed = 2131230805(smallest)
-
-        /*Integer myString = layoutOne.getChildAt(0).getPaddingLeft();
-        Log.d("MY_TAG", myString.toString());*/
-
-       /* if(parentLayoutView == 255083217 && layoutTwo.getChildCount() == 1){
-            if(viewId == 2131231024){
-                if(findViewById(R.id.small_green).getTop() == 0) {
-                    setMargins(findViewById(R.id.small_green), 0, 630, 0, 0);
-                    Log.d("MY_TAG", "Running");
-                }
-            }else if(viewId == 2131230924){
-                if(findViewById(R.id.medium_blue).getTop() == 0) {
-                    setMargins(findViewById(R.id.medium_blue), 0, 630, 0, 0);
-                    Log.d("MY_TAG", "Running");
-                }
-            }else if(viewId == 2131230805){
-                if(findViewById(R.id.big_red).getTop() == 0) {
-                    setMargins(findViewById(R.id.big_red), 0, 630, 0, 0);
-                    Log.d("MY_TAG", "Running");
-                }
-            }
-        }*/
-
-        //Padding green = 77, padding blue = 41, padding red = 0
-        //Moves a view back to the other layout
-       /* if(view.getPaddingLeft() > 30){
-            View myView = view;
-            layoutTwo.removeView(view);
-            layoutOne.addView(myView);
-        }*/
-        //Finn id til laoyout du legger den i.
-
-
-        /*//A bigger cant go on a smaller
-        ViewGroup newOwner = (ViewGroup) view.getParent();
-        //if(newOwner.getChildCount() != 0) {
-            if (view.getPaddingLeft() < newOwner.getChildAt(0).getPaddingLeft()){
-                View myView = view;
-                newOwner.removeView(view);
-                owner.addView(myView, 0);
-                view.setVisibility(View.VISIBLE);
-                Log.d("MY_TAG", "klas");
-            }
-        //}*/
-        //test
-        //Integer gitId = layoutOne.getChildAt(0).getId();
-        //Log.d("MY_TAG", "Running");
-
-
-        //gameLogic(event);
     }
 
 }
