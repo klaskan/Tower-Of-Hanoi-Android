@@ -100,23 +100,38 @@ public class MainActivity extends AppCompatActivity {
 
 
         if(savedInstanceState != null){
+            //press start button
+            startButton.performClick();
             //Count
-            Integer countString = (Integer) savedInstanceState.getInt("count");
-            counter = (int) countString;
+            Integer countString = savedInstanceState.getInt("count");
+            counter = countString;
             countText.setText(countString.toString());
-
             //time
             double restoreTime = (Double) savedInstanceState.getDouble("time");
             time = restoreTime;
-            //set count text
-            Integer stringCount = counter;
-            countText.setText(stringCount.toString());
             //format time and put it into text
-
             textUpdateTime.setText(getTimerText(time));
-            startButton.performClick();
-        }
+            //save the position of the rings
+            ArrayList<Integer> savedLayoutOne = (ArrayList<Integer>) savedInstanceState.getIntegerArrayList("layoutOne");
+            ArrayList<Integer> savedLayoutTwo = (ArrayList<Integer>) savedInstanceState.getIntegerArrayList("layoutTwo");
+            ArrayList<Integer> savedLayoutThree = (ArrayList<Integer>) savedInstanceState.getIntegerArrayList("layoutThree");
+            for (Integer viewId : savedLayoutOne) {
+                View tempViw = findViewById(viewId);
+                ((ViewGroup) tempViw.getParent()).removeView(tempViw);
+                layout1.addView(tempViw);
+            }
+            for (Integer viewId : savedLayoutTwo) {
+                View tempViw = findViewById(viewId);
+                ((ViewGroup) tempViw.getParent()).removeView(tempViw);
+                layout2.addView(tempViw);
+            }
+            for (Integer viewId : savedLayoutThree) {
+                View tempViw = findViewById(viewId);
+                ((ViewGroup) tempViw.getParent()).removeView(tempViw);
+                layout3.addView(tempViw);
+            }
 
+        }
 
     }
 
@@ -129,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
             countText.setText(countString.toString());
             startButtonPressed = true;
             startButton.setText(R.string.reset);
+
             //start the timer
             startTimer();
             //Adde the touchListeners
@@ -283,6 +299,9 @@ public class MainActivity extends AppCompatActivity {
             mediumBlue.setOnTouchListener(null);
             bigRed.setOnTouchListener(null);
             Log.d("MY_TAG", "We have a winner!");
+            /*View myView = findViewById(bigRed.getId());
+            layout3.removeView(myView);
+            layout2.addView(myView);*/
 
         }
 
@@ -292,7 +311,6 @@ public class MainActivity extends AppCompatActivity {
     public void notSmallestView(View v, DragEvent event){
         View view = (View) event.getLocalState();
         ViewGroup owner = (ViewGroup) view.getParent();
-
         if (view != owner.getChildAt(0)){
             v.setBackground(getResources().getDrawable(R.drawable.t_big));
         }else{
@@ -343,17 +361,20 @@ public class MainActivity extends AppCompatActivity {
         //save placement of rings (just save layout), save time, save count
         outState.putInt("count", counter);
         outState.putDouble("time", time);
-
-
+        //save the position of the rings
+        statusLayouts();
+        outState.putIntegerArrayList("layoutOne", layoutOneList);
+        outState.putIntegerArrayList("layoutTwo", layoutTwoList);
+        outState.putIntegerArrayList("layoutThree", layoutThreeList);
 
     }
 
     //Not used.
     public void statusLayouts(){
         //Lists containing elements in the 3 different linearLayouts
-        layoutOneList = new ArrayList<>();
-        layoutTwoList = new ArrayList<>();
-        layoutThreeList = new ArrayList<>();
+        layoutOneList = new ArrayList<Integer>();
+        layoutTwoList = new ArrayList<Integer>();
+        layoutThreeList = new ArrayList<Integer>();
 
         LinearLayout layoutOne = findViewById(R.id.layout_01);
         LinearLayout layoutTwo = findViewById(R.id.layout_02);
